@@ -55,7 +55,20 @@
 
         <!-- Message Input -->
         <div class="bg-white border-t p-4">
-            <div class="flex space-x-3">
+        <div class="flex space-x-3">
+
+            <!-- For image upload-->
+            <label class="cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-3 rounded-full">
+            <i class="fas fa-image"></i>
+            <input type="file" id="imageUpload" accept="image/*" multiple hidden>
+            </label>
+
+            <!-- For document upload-->
+            <label class="cursor-pointer bg-gray-200 hover:bg-gray-300 text-gray-700 px-3 py-3 rounded-full">
+            <i class="fas fa-paperclip"></i>
+            <input type="file" id="fileUpload" accept=".pdf,.doc,.docx,.txt" multiple hidden>
+            </label>
+
                 <div class="flex-1 relative">
                     <input 
                         type="text" 
@@ -431,11 +444,18 @@
                 </div>
                 <div class="mt-1 text-sm">${escapeHtml(message.content)}</div>
                 ${message.attachments && message.attachments.length > 0 ? `
-                    <div class="mt-2">
-                        ${message.attachments.map(att => 
-                            `<div class="text-xs text-blue-400 underline">📎 ${att.name}</div>`
-                        ).join('')}
-                    </div>
+                <div class="mt-2 space-y-1">
+                    ${message.attachments.map(att => {
+                    if (att.type.startsWith('image/')) {
+                        return `<img src="${att.url}" class="rounded-lg mt-2 max-w-[200px] shadow-md cursor-pointer" 
+                                    onclick="window.open('${att.url}', '_blank')" alt="${att.filename}">`;
+                    } else {
+                        return `<a href="${att.url}" target="_blank" class="text-xs text-blue-600 underline">
+                                📎 ${att.filename}
+                                </a>`;
+                    }
+                    }).join('')}
+                </div>
                 ` : ''}
             </div>
         `;
@@ -517,6 +537,52 @@ async function sendMessage() {
         showToast('Not connected to chat', 'error');
         return;
     }
+
+
+// Image and document upload handling
+
+// Upload handler (images or files)
+  async function uploadAttachments(type) {
+  const input = type === 'image' ? document.getElementById('imageUpload') : document.getElementById('fileUpload');
+  const files = input.files;
+  if (!files.length) return;
+
+  const formData = new FormData();
+  const fieldName = type === 'image' ? 'images' : 'files';
+  for (const file of files) formData.append(fieldName, file);
+
+  try {
+    const chatId = getChatId();
+    const endpoint = type === 'image'
+      ? `/api/chats/${chatId}/attachments/images`
+      : `/api/chats/${chatId}/attachments/files`;
+
+    showToast(`Uploading ${type === 'image' ? 'image(s)' : 'file(s)'}...`, 'info');
+
+    const res = await fetch(`http://localhost:5001${endpoint}`, {
+      method: 'POST',
+      headers: { 'x-auth-token': token },
+      body: formData
+    });
+
+    const result = await res.json();
+    if (!res.ok) throw new Error(result.msg || 'Upload failed');
+
+    showToast(`${type === 'image' ? 'Image(s)' : 'File(s)'} sent successfully!`, 'success');
+    input.value = ''; 
+
+    // Show message instantly or wait for socket event
+    if (result.message) appendMessage(result.message);
+    scrollToBottom();
+  } catch (err) {
+    console.error('Upload error:', err);
+    showToast(err.message, 'error');
+  }
+}
+
+    // Listen for upload events
+    document.getElementById('imageUpload').addEventListener('change', () => uploadAttachments('image'));
+    document.getElementById('fileUpload').addEventListener('change', () => uploadAttachments('file'));
 
     // Disable input while sending
     messageInput.disabled = true;

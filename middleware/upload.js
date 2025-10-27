@@ -36,6 +36,27 @@ const documentsStorage = new CloudinaryStorage({
   }
 });
 
+// Chat Image Upload Storage
+const chatImageStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: FOLDERS.CHAT_IMAGES,
+    allowed_formats: ['jpg', 'jpeg', 'png', 'gif', 'webp'],
+    transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+  },
+});
+
+// Chat File Upload Storage
+const chatFileStorage = new CloudinaryStorage({
+  cloudinary,
+  params: {
+    folder: FOLDERS.CHAT_DOCUMENTS,
+    resource_type: 'raw',
+    allowed_formats: ['pdf', 'doc', 'docx']
+  },
+});
+
+
 // File filters
 const imageFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {

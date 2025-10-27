@@ -14,7 +14,9 @@ const FOLDERS = {
     PET_MEDICAL_DOCS: 'petconnect/pets/medical',
     PET_VACCINATION_DOCS: 'petconnect/pets/vaccinations',
     PET_TRAINING_DOCS: 'petconnect/pets/training',
-    PET_GENERAL_DOCS: 'petconnect/pets/documents'
+    PET_GENERAL_DOCS: 'petconnect/pets/documents',
+    CHAT_IMAGES: 'petconnect/chats/images',
+    CHAT_DOCUMENTS :'petconnect/chats/files'
   };
  
 

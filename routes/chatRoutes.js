@@ -10,5 +10,11 @@ router.get('/adoption/:adoptionRequestId', auth, chatController.getOrCreateChat)
 router.get('/:chatId/messages', auth, chatController.getMessages); 
 router.post('/:chatId/messages', auth, chatController.sendMessage); 
 
+// Image uploads (Jpg, jpeg, etc.)
+router.post('/:chatId/attachments/images', auth,  chatController.sendAttachmentMessage);
+
+// File uploads (pdf, docx, etc.)
+router.post('/:chatId/attachments/files',auth, chatController.sendAttachmentMessage);
+
 module.exports = router;
 
